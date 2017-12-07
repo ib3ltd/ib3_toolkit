@@ -1,0 +1,10 @@
+services:
+  ib3_toolkit.items:
+    class: Drupal\ib3_toolkit\Services\ItemsService
+    arguments: []
+  ib3_toolkit.menu:
+    class: Drupal\ib3_toolkit\Services\MenuService
+    arguments: []
+  ib3_toolkit.taxonomy:
+    class: Drupal\ib3_toolkit\Services\TaxonomyService
+    arguments: []

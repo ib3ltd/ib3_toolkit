@@ -1,0 +1,5 @@
+name: ib3 Toolkit
+type: module
+description: Collection of services and traits to make life simple.
+core: 8.x
+package: ib3
