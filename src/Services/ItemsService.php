@@ -224,29 +224,104 @@ class ItemsService implements ItemsInterface {
     return $this->nidCount();
   }
 
-  private function fetchParagraph($node, $field_name)
-  {
-    if (!$this->hasParagraph($node, $field_name)) return null;
-    if (!$node->{$field_name}->target_id) return null;
-
-    if ($node->{$field_name}->count() == 1) {
-      return Paragraph::load($node->{$field_name}->target_id);
+  private function paragraphExists($entity, $paragraph_name, $is_node) {
+    if (!$this->hasParagraph($entity, $paragraph_name, $is_node)) return false;
+    if ($is_node) {
+      if (!$entity->{$paragraph_name}->target_id) return false;
     }
-
-    $target_ids = [];
-
-    foreach($node->{$field_name} as $p) {
-      $target_ids[] = $p->target_id;
-    }
-
-    $paragraph = Paragraph::loadMultiple($target_ids);
-
-    return $paragraph;
+    return true;
   }
 
-  private function hasParagraph($node, $field_name)
+  private function isSingleParagraph($entity, $paragraph_name, $is_node) {
+    if ($is_node) {
+      return $entity->{$paragraph_name}->count() == 1 ? true : false;
+    } else {
+      return $entity->get($paragraph_name)->count() == 1 ? true : false;
+    }
+  }
+
+  private function loadSingleParagraph($node, $paragraph_name, $is_node) {
+    if ($is_node) {
+      return Paragraph::load($node->{$paragraph_name}->target_id);
+    } else {
+      return $node->{$paragraph_name}->entity;
+    }
+  }
+
+  private function loadMultipleParagraph($node, $paragraph_name, $is_node) {
+    $target_ids = [];
+    $paragraphs = [];
+    foreach ($node->{$paragraph_name} as $p) {
+      if ($is_node) {
+        $target_ids[] = $p->target_id;
+      } else {
+        $paragraphs[] = $p->entity;
+      }
+    }
+    if ($is_node) {
+      return Paragraph::loadMultiple($target_ids);
+    } else {
+      return $paragraphs;
+    }
+  }
+
+  private function paragraphHasChildren($paragraph_names) {
+    if (!$paragraph_names) return false;
+    if (!is_array($paragraph_names)) return false;
+    return empty($paragraph_names) ? false : true;
+  }
+
+  private function fetchChildParagraphs($entity, $paragraph_names, $is_node = true)
   {
-    return isset($node->{$field_name}) ? true : false;
+    $paragraph_name = array_shift($paragraph_names);
+    var_dump($paragraph_name);
+
+    if (!$this->paragraphExists($entity, $paragraph_name, $is_node)) return null;
+    if($this->isSingleParagraph($entity, $paragraph_name, $is_node)) {
+
+      $paragraph = $this->loadSingleParagraph($entity, $paragraph_name, $is_node);
+
+      //var_dump($paragraph->get('field_plots')->referencedEntities()[0]->get('field_plot')->value); // this returns 1 finally!
+      if ($this->paragraphHasChildren($paragraph_names)) {
+        $paragraph_name = array_shift($paragraph_names);
+        return $paragraph->get($paragraph_name)->referencedEntities();
+      } else {
+        return $paragraph;
+      }
+    } else {
+      $entities = $this->loadMultipleParagraph($entity, $paragraph_name, $is_node);
+      $paragraphs = [];
+      foreach ($entity as $paragraph) {
+        if ($this->paragraphHasChildren($paragraph_names)) {
+          $paragraph_name = array_shift($paragraph_names);
+          $paragraphs[] = $paragraph->get($paragraph_name)->referencedEntities();
+        } else {
+          $paragraphs[] = $paragraph;
+        }
+      }
+      return $paragraphs;
+    }
+  }
+
+  private function fetchParagraph($node, $field_name)
+  {
+    if ($this->paragraphHasChildren($field_name)) {
+      return $this->fetchChildParagraphs($node, $field_name, true);
+    }
+
+    if (!$this->paragraphExists($node, $field_name, true)) return null;
+
+    if ($this->isSingleParagraph($node, $field_name, true)) {
+      $p = $this->loadSingleParagraph($node, $field_name, true);
+      return $p;
+    }
+
+    return $this->loadMultipleParagraph($node, $field_name, true);
+  }
+
+  private function hasParagraph($entity, $field_name, $is_node = true)
+  {
+    return isset($entity->{$field_name}) ? true : false;
   }
 
   private function hasItems()

@@ -17,6 +17,12 @@ trait Field {
     return (is_array($entity)) ? $this->multi($entity, $field_name) : $this->single($entity, $field_name);
   }
 
+  protected function prepareIntegerFromField($entity, $arr)
+  {
+    extract($arr);
+    return (is_array($entity)) ? $this->multi($entity, $field_name) : $this->single($entity, $field_name);
+  }
+
   protected function prepareUrlFromField($entity, $arr)
   {
     extract($arr);

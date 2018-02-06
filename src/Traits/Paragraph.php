@@ -8,6 +8,13 @@ trait Paragraph {
 
   use Field;
 
+  protected function prepareIntegerFromParagraph($entity, $arr)
+  {
+    extract($arr);
+    $paragraph = $this->fetchParagraph($entity, $paragraph_name);
+    return $paragraph ? $this->prepareIntegerFromField($paragraph, ['field_name' => $field_name]) : null;
+  }
+
   protected function prepareTextFromParagraph($entity, $arr)
   {
     extract($arr);
