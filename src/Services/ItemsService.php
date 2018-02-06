@@ -274,14 +274,12 @@ class ItemsService implements ItemsInterface {
   private function fetchChildParagraphs($entity, $paragraph_names, $is_node = true)
   {
     $paragraph_name = array_shift($paragraph_names);
-    var_dump($paragraph_name);
 
     if (!$this->paragraphExists($entity, $paragraph_name, $is_node)) return null;
     if($this->isSingleParagraph($entity, $paragraph_name, $is_node)) {
 
       $paragraph = $this->loadSingleParagraph($entity, $paragraph_name, $is_node);
 
-      //var_dump($paragraph->get('field_plots')->referencedEntities()[0]->get('field_plot')->value); // this returns 1 finally!
       if ($this->paragraphHasChildren($paragraph_names)) {
         $paragraph_name = array_shift($paragraph_names);
         return $paragraph->get($paragraph_name)->referencedEntities();
