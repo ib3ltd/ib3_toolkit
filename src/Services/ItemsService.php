@@ -44,6 +44,11 @@ class ItemsService implements ItemsInterface {
     return $this->items[$idx];
   }
 
+  public function getItemType($idx)
+  {
+    return $this->nodes[$idx]->get('type')->getValue()[0]['target_id'];
+  }
+
   private function clearItems()
   {
     $this->items = null;

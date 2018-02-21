@@ -12,4 +12,6 @@ interface ItemsInterface {
   public function getItems();
 
   public function getItem($idx);
+
+  public function getItemType($idx);
 }
