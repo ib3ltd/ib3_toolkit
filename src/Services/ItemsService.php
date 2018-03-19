@@ -141,12 +141,7 @@ class ItemsService implements ItemsInterface {
 
     foreach ($params['children'] as $field_name => $definition) {
       $field_rows = $this->processFieldDefinition($node, $definition);
-      if (!is_array($definition[1]['paragraph_name']))
-      {
-        $field_values['children'][$field_name] = $field_rows;
-      } else {
-        $field_values['children'][$field_name] = $field_rows;
-      }
+      $field_values['children'][$field_name] = $field_rows;
     }
     return $field_values;
   }
@@ -177,7 +172,15 @@ class ItemsService implements ItemsInterface {
             }
           }
         } else {
-          $row[$child_name] = $child;
+          // hits here through lack of iteration
+          if (array_key_exists('parent', $child) && array_key_exists('children', $child)) {
+            $row[$child_name][$child_name] = $child['parent'][0];
+            foreach ($child['children'] as $ckey => $cval) {
+              $row[$child_name][$ckey] = $cval[0];
+            }
+          } else {
+            $row[$child_name] = $child;
+          }
         }
       } else {
         $row[$child_name] = $child;
