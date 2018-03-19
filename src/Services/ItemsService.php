@@ -172,12 +172,18 @@ class ItemsService implements ItemsInterface {
             }
           }
         } else {
-          // hits here through lack of iteration
           if (array_key_exists('parent', $child) && array_key_exists('children', $child)) {
+            for($x = 0; $x<count($child['parent']); $x++) {
+              $row[$child_name][$child_name][$x] = $child['parent'][$x];
+              foreach ($child['children'] as $ckey => $cval) {
+                $row[$child_name][$ckey][$x] = $cval[$x];
+              }
+            }
+            /*
             $row[$child_name][$child_name] = $child['parent'][0];
             foreach ($child['children'] as $ckey => $cval) {
               $row[$child_name][$ckey] = $cval[0];
-            }
+            }*/
           } else {
             $row[$child_name] = $child;
           }
