@@ -141,9 +141,13 @@ class ItemsService implements ItemsInterface {
 
     foreach ($params['children'] as $field_name => $definition) {
       $field_rows = $this->processFieldDefinition($node, $definition);
-      $field_values['children'][$field_name] = $field_rows;
+      if (!is_array($definition[1]['paragraph_name']))
+      {
+        $field_values['children'][$field_name] = $field_rows;
+      } else {
+        $field_values['children'][$field_name] = $field_rows;
+      }
     }
-
     return $field_values;
   }
 
@@ -157,7 +161,27 @@ class ItemsService implements ItemsInterface {
     $row = [];
     $row[$key] = $parent;
     foreach ($children as $child_name => $child) {
-      $row[$child_name] = is_null($iteration) ? $child : $child[$iteration];
+      if (is_array($child)) {
+        if ($iteration !== null) {
+          if (array_key_exists($iteration, $child)) {
+            $row[$child_name] = $child[$iteration];
+          } else {
+            if (array_key_exists('parent', $child) && array_key_exists('children', $child)) {
+              $x=0;
+              $row[$child_name][$child_name] = $child['parent'][$iteration];
+              foreach ($child['children'] as $ckey => $cval) {
+                $row[$child_name][$ckey] = $cval[$iteration];
+              }
+            } else {
+              $row[$child_name] = $child;
+            }
+          }
+        } else {
+          $row[$child_name] = $child;
+        }
+      } else {
+        $row[$child_name] = $child;
+      }
     }
     return $row;
   }
@@ -219,8 +243,21 @@ class ItemsService implements ItemsInterface {
     $query = \Drupal::entityQuery('node');
 
     foreach ($this->getFilterDefinitions() as $definition) {
-      if (!isset($definition[3])) $definition[3] = null;
-      $query->{$definition[0]}($definition[1], $definition[2], $definition[3]);
+      switch($definition[0]) {
+        case 'sort':
+          $query->sort($definition[1], $definition[2]);
+          break;
+        case 'limit':
+          $query->pager($definition[1]);
+          break;
+        case 'range':
+          $query->range($definition[1], $definition[2]);
+          break;
+        case 'condition':
+          if (!isset($definition[3])) $definition[3] = null;
+          $query->condition($definition[1], $definition[2], $definition[3]);
+          break;
+      }
     }
 
     $nids = $query->execute();
@@ -278,32 +315,20 @@ class ItemsService implements ItemsInterface {
 
   private function fetchChildParagraphs($entity, $paragraph_names, $is_node = true)
   {
-    $paragraph_name = array_shift($paragraph_names);
-
-    if (!$this->paragraphExists($entity, $paragraph_name, $is_node)) return null;
-    if($this->isSingleParagraph($entity, $paragraph_name, $is_node)) {
-
-      $paragraph = $this->loadSingleParagraph($entity, $paragraph_name, $is_node);
-
-      if ($this->paragraphHasChildren($paragraph_names)) {
-        $paragraph_name = array_shift($paragraph_names);
-        return $paragraph->get($paragraph_name)->referencedEntities();
-      } else {
-        return $paragraph;
+    $paragraphs = [];
+    $c = 0;
+    foreach ($entity->get($paragraph_names[0])->getValue() as $entity_value) {
+      $paragraphs[$c] = [];
+      $target_id = $entity_value['target_id'];
+      $x = Paragraph::load($target_id);
+      foreach($x->get($paragraph_names[1])->getValue() as $ev) {
+        $ti = $ev['target_id'];
+        $y = Paragraph::load($ti);
+        $paragraphs[$c][] = $y;
       }
-    } else {
-      $entities = $this->loadMultipleParagraph($entity, $paragraph_name, $is_node);
-      $paragraphs = [];
-      foreach ($entity as $paragraph) {
-        if ($this->paragraphHasChildren($paragraph_names)) {
-          $paragraph_name = array_shift($paragraph_names);
-          $paragraphs[] = $paragraph->get($paragraph_name)->referencedEntities();
-        } else {
-          $paragraphs[] = $paragraph;
-        }
-      }
-      return $paragraphs;
+      $c++;
     }
+    return $paragraphs;
   }
 
   private function fetchParagraph($node, $field_name)
