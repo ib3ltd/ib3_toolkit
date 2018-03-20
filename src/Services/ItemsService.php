@@ -185,7 +185,11 @@ class ItemsService implements ItemsInterface {
               }
               foreach ($child['children'] as $ckey => $cval) {
                 if (is_array($cval)) {
-                  $row[$child_name][$ckey][$x] = $cval[$x][0];
+                  if (is_array($cval[$x])) {
+                    $row[$child_name][$ckey][$x] = $cval[$x][0];
+                  } else {
+                    $row[$child_name][$ckey][$x] = $cval[$x];
+                  }
                 } else {
                   $row[$child_name][$ckey][$x] = $cval;
                 }
