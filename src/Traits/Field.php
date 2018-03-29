@@ -87,6 +87,14 @@ trait Field {
 
   private function singleComplex($entity, $field_name)
   {
-    return (null !== $entity->get($field_name)) ? $entity->get($field_name)->getValue()[0] : null;
+    if (null !== $entity->get($field_name)) {
+      if (array_key_exists(0, $entity->get($field_name)->getValue())) {
+        return $entity->get($field_name)->getValue()[0];
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
   }
 }

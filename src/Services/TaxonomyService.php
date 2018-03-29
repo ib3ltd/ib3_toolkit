@@ -30,7 +30,7 @@ class TaxonomyService implements TaxonomyInterface {
   public function getTermById($taxonomy_name, $term_id)
   {
     $terms = $this->getTaxonomyTreeByName($taxonomy_name);
-    return $terms[$term_id];
+    return is_numeric($term_id) ? $terms[$term_id] : null;
   }
 
   public function getTermsByDepth($taxonomy_name, $depth)
