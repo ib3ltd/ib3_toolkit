@@ -20,4 +20,11 @@ trait ReferenceField {
     }
     return $values;
   }
+
+  protected function prepareTaxonomyIdFromReferenceField($entity, $arr)
+  {
+    extract($arr);
+    $e = $entity->get($parent_field_name);
+    return $this->prepareTaxonomyIdFromField($e->entity, $arr);
+  }
 }

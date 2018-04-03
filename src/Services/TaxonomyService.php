@@ -19,6 +19,7 @@ class TaxonomyService implements TaxonomyInterface {
         $tids[$term->tid] = [
           'id' => $term->tid,
           'name' => $term->name,
+          'description' => $term->description__value,
           'depth' => $term->depth,
           'parent' => $term->parents[0],
         ];
