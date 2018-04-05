@@ -9,7 +9,7 @@ use Drupal\ib3_toolkit\Interfaces\TaxonomyInterface;
  */
 class TaxonomyService implements TaxonomyInterface {
 
-  public function getTaxonomyTreeByName($taxonomy_name)
+  public function getTaxonomyTreeByName($taxonomy_name, $taxonomy_filter_by = 'tid')
   {
     $terms =\Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadTree($taxonomy_name);
     $tids = [];
