@@ -16,13 +16,18 @@ class TaxonomyService implements TaxonomyInterface {
     $entries = null;
 
     foreach ($terms as $term) {
-        $tids[$term->tid] = [
-          'id' => $term->tid,
-          'name' => $term->name,
-          'description' => $term->description__value,
-          'depth' => $term->depth,
-          'parent' => $term->parents[0],
-        ];
+
+      $path = '/taxonomy/term/'.$term->tid;
+      $term->alias = \Drupal::service('path.alias_manager')->getAliasByPath($path);
+
+      $tids[$term->{$taxonomy_filter_by}] = [
+        'id' => $term->tid,
+        'name' => $term->name,
+        'alias' => $term->alias,
+        'description' => $term->description__value,
+        'depth' => $term->depth,
+        'parent' => $term->parents[0],
+      ];
     }
 
     return $tids;
@@ -34,10 +39,15 @@ class TaxonomyService implements TaxonomyInterface {
     return is_numeric($term_id) ? $terms[$term_id] : null;
   }
 
+  public function getTermByAlias($taxonomy_name, $term_alias)
+  {
+    $terms = $this->getTaxonomyTreeByName($taxonomy_name, 'alias');
+    return $term_alias ? $terms[$term_alias] : null;
+  }
+
   public function getTermsByDepth($taxonomy_name, $depth)
   {
     $terms = $this->getTaxonomyTreeByName($taxonomy_name);
-    $depth = $depth;
 
     $level_terms = null;
 
