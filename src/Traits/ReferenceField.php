@@ -31,7 +31,15 @@ trait ReferenceField {
   protected function prepareEntityFromReferenceField($entity, $arr)
   {
     extract($arr);
-    $e = $entity->get($parent_field_name);
-    return $e->entity;
+    $values = [];
+    if (get_class($entity->get($parent_field_name)) == 'Drupal\Core\Field\EntityReferenceFieldItemList') {
+      foreach($entity->get($parent_field_name) as $e) {
+        $values[] = $e->entity;
+      }
+      return $values;
+    } else {
+      $e = $entity->get($parent_field_name);
+      return $e->entity;
+    }
   }
 }
