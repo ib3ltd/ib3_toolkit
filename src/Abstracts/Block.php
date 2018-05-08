@@ -10,6 +10,7 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\user\PrivateTempStoreFactory;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Drupal\Core\Cache\Cache;
 
 
 abstract class Block extends BlockBase implements ContainerFactoryPluginInterface {
@@ -59,5 +60,24 @@ abstract class Block extends BlockBase implements ContainerFactoryPluginInterfac
       $container->get('user.private_tempstore'),
       $container->get('request_stack')
     );
+  }
+
+
+  public function getCacheTags()
+  {
+    if ($node = \Drupal::routeMatch()->getParameter('node')) {
+      return Cache::mergeTags(parent::getCacheTags(), [
+        'node:' . $node->id(),
+      ]);
+    } else {
+      return parent::getCacheTags();
+    }
+  }
+
+  public function getCacheContexts() {
+    return Cache::mergeContexts(parent::getCacheContexts(), [
+      'route',
+      'url.query_args'
+    ]);
   }
 }
