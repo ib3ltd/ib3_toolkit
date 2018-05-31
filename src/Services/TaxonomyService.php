@@ -42,7 +42,7 @@ class TaxonomyService implements TaxonomyInterface {
   public function getTermByAlias($taxonomy_name, $term_alias)
   {
     $terms = $this->getTaxonomyTreeByName($taxonomy_name, 'alias');
-    return $term_alias ? $terms[$term_alias] : null;
+    return array_key_exists($term_alias, $terms) ? $terms[$term_alias] : null;
   }
 
   public function getTermsByDepth($taxonomy_name, $depth)
