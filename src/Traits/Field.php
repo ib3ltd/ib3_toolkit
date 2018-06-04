@@ -42,24 +42,26 @@ trait Field {
   }
 
   protected function prepareTaxonomyIdFromField($entity, $arr)
-  {
-    extract($arr);
+    {
+      extract($arr);
 
-    if (is_array($entity)) {
-      return array_column($this->multiComplex($entity, $field_name), 'target_id');
-    } else {
-      $values = $this->singleComplex($entity, $field_name);
-      if (is_array($values) && !array_key_exists('target_id', $values)) {
-        $target_ids = [];
-        foreach($values as $val) {
-          $target_ids[] = (is_array($val)) ? $val['target_id'] : $val;
-        }
-        return $target_ids;
+      if (is_array($entity)) {
+        return array_column($this->multiComplex($entity, $field_name), 'target_id');
       } else {
-        return $values['target_id'];
+        $values = $this->singleComplex($entity, $field_name);
+        if (is_array($values)) {
+          $target_ids = [];
+          foreach($values as $val) {
+            $target_ids[] = $val['target_id'];
+          }
+          return $target_ids;
+        } else {
+          return $this->singleComplex($entity, $field_name)['target_id'];
+        }
       }
     }
-  }
+
+
 
   protected function prepareImageFromField($entity, $arr)
   {
@@ -95,15 +97,19 @@ trait Field {
   }
 
   private function singleComplex($entity, $field_name)
-  {
-    if (null !== $entity->get($field_name)) {
-      if (array_key_exists(0, $entity->get($field_name)->getValue())) {
-        return $entity->get($field_name)->getValue()[0];
-      } else {
-        return null;
-      }
-    } else {
-      return null;
+    {
+     if (null !== $entity->get($field_name)) {
+       if (array_key_exists(0, $entity->get($field_name)->getValue())) {
+         if (count($entity->get($field_name)->getValue()) > 1) {
+           return $entity->get($field_name)->getValue();
+         } else {
+           return $entity->get($field_name)->getValue()[0];
+         }
+       } else {
+         return null;
+       }
+     } else {
+       return null;
+     }
     }
-  }
 }
