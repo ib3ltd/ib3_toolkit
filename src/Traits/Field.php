@@ -48,7 +48,16 @@ trait Field {
     if (is_array($entity)) {
       return array_column($this->multiComplex($entity, $field_name), 'target_id');
     } else {
-      return $this->singleComplex($entity, $field_name)['target_id'];
+      $values = $this->singleComplex($entity, $field_name);
+      if (is_array($values) && !array_key_exists('target_id', $values)) {
+        $target_ids = [];
+        foreach($values as $val) {
+          $target_ids[] = (is_array($val)) ? $val['target_id'] : $val;
+        }
+        return $target_ids;
+      } else {
+        return $values['target_id'];
+      }
     }
   }
 
