@@ -42,25 +42,25 @@ trait Field {
   }
 
   protected function prepareTaxonomyIdFromField($entity, $arr)
-    {
-      extract($arr);
+  {
+   extract($arr);
 
-      if (is_array($entity)) {
-        return array_column($this->multiComplex($entity, $field_name), 'target_id');
-      } else {
-        $values = $this->singleComplex($entity, $field_name);
-        if (is_array($values)) {
-          $target_ids = [];
-          foreach($values as $val) {
-            $target_ids[] = $val['target_id'];
-          }
-          return $target_ids;
-        } else {
-          return $this->singleComplex($entity, $field_name)['target_id'];
-        }
-      }
-    }
+   if (is_array($entity)) {
+     return array_column($this->multiComplex($entity, $field_name), 'target_id');
+   } else {
+     $values = $this->singleComplex($entity, $field_name);
 
+     if (is_array($values)) {
+       $target_ids = [];
+       foreach($values as $val) {
+         $target_ids[] = is_array($val) ? $val['target_id'] : $val;
+       }
+       return $target_ids;
+     } else {
+       return $values['target_id'];
+     }
+   }
+  }
 
 
   protected function prepareImageFromField($entity, $arr)
