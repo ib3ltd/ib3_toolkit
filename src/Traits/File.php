@@ -17,8 +17,10 @@ trait File {
   {
     foreach($entity->get($field_name) as $e) {
       $uri = $e->entity->getFileUri();
+      $fid = $e->entity->id();
       $url = file_url_transform_relative(file_create_url($uri));
       $files[] = [
+        'fid' => $fid,
         'url' => $url,
         'description' => $e->getValue()['description'],
       ];
